@@ -1,55 +1,45 @@
-"""octofit_tracker URL Configuration
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/4.1/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+octofit_tracker URL Configuration
+"""
+
+import os
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from . import views
-from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+from . import views
+
+# Base URL for Codespaces REST API endpoints:
+# https://$CODESPACE_NAME-8000.app.github.dev/api/
+
+CODESPACE_NAME = os.environ.get("CODESPACE_NAME", "")
+
+if CODESPACE_NAME:
+    BASE_API_URL = f"https://{CODESPACE_NAME}-8000.app.github.dev/api/"
+else:
+    BASE_API_URL = "http://localhost:8000/api/"
 
 router = DefaultRouter()
-router.register(r'users', views.UserViewSet)
-router.register(r'teams', views.TeamViewSet)
-router.register(r'activities', views.ActivityViewSet)
-router.register(r'leaderboard', views.LeaderboardViewSet)
-router.register(r'workouts', views.WorkoutViewSet)
+router.register(r"users", views.UserViewSet)
+router.register(r"teams", views.TeamViewSet)
+router.register(r"activities", views.ActivityViewSet)
+router.register(r"leaderboard", views.LeaderboardViewSet)
+router.register(r"workouts", views.WorkoutViewSet)
 
-@api_view(['GET'])
+@api_view(["GET"])
 def api_root(request, format=None):
-    base_url = request.build_absolute_uri('/api/')
-    if not base_url.endswith('/'):
-        base_url += '/'
     return Response({
-        'users': base_url + 'users/',
-        'teams': base_url + 'teams/',
-        'activities': base_url + 'activities/',
-        'leaderboard': base_url + 'leaderboard/',
-        'workouts': base_url + 'workouts/',
+        "users":       f"{BASE_API_URL}users/",
+        "teams":       f"{BASE_API_URL}teams/",
+        "activities":  f"{BASE_API_URL}activities/",
+        "leaderboard": f"{BASE_API_URL}leaderboard/",
+        "workouts":    f"{BASE_API_URL}workouts/",
     })
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include(([
-        path('', api_root, name='api-root'),
-        # Aquí se agregarán los endpoints de la API, por ejemplo:
-        # path('users/', include('users.urls')),
-        # path('teams/', include('teams.urls')),
-        # path('activities/', include('activities.urls')),
-        # path('leaderboard/', include('leaderboard.urls')),
-        # path('workouts/', include('workouts.urls')),
-    ], 'api'))),
-    path('api/', include(router.urls)),
+    path("admin/", admin.site.urls),
+    path("api/", api_root, name="api-root"),
+    path("api/", include(router.urls)),
 ]
