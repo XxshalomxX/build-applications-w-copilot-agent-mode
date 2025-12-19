@@ -29,16 +29,27 @@ router.register(r'workouts', views.WorkoutViewSet)
 
 @api_view(['GET'])
 def api_root(request, format=None):
+    base_url = request.build_absolute_uri('/api/')
+    if not base_url.endswith('/'):
+        base_url += '/'
     return Response({
-        'users': request.build_absolute_uri('/api/users/'),
-        'teams': request.build_absolute_uri('/api/teams/'),
-        'activities': request.build_absolute_uri('/api/activities/'),
-        'leaderboard': request.build_absolute_uri('/api/leaderboard/'),
-        'workouts': request.build_absolute_uri('/api/workouts/'),
+        'users': base_url + 'users/',
+        'teams': base_url + 'teams/',
+        'activities': base_url + 'activities/',
+        'leaderboard': base_url + 'leaderboard/',
+        'workouts': base_url + 'workouts/',
     })
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', api_root, name='api-root'),
+    path('api/', include(([
+        path('', api_root, name='api-root'),
+        # Aquí se agregarán los endpoints de la API, por ejemplo:
+        # path('users/', include('users.urls')),
+        # path('teams/', include('teams.urls')),
+        # path('activities/', include('activities.urls')),
+        # path('leaderboard/', include('leaderboard.urls')),
+        # path('workouts/', include('workouts.urls')),
+    ], 'api'))),
     path('api/', include(router.urls)),
 ]
